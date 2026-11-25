@@ -1,0 +1,92 @@
+{
+  "name": "reloventa",
+  "productName": "Reloventa",
+  "version": "1.0.0",
+  "description": "Reloventa \u2014 Social. Stream. Explore. A premium social & entertainment hub for macOS.",
+  "main": "src/main/main.js",
+  "author": "Reloventa",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "icons": "python3 branding/tools/gen_svgs.py && node branding/tools/build-icons.js",
+    "test:ui": "node test/ui-smoke.js",
+    "dist": "electron-builder --mac --publish never",
+    "release": "electron-builder --mac --publish always"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "playwright": "^1.48.0"
+  },
+  "build": {
+    "appId": "app.reloventa.mac",
+    "productName": "Reloventa",
+    "copyright": "Copyright \u00a9 Reloventa",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.social-networking",
+      "icon": "build/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "hardenedRuntime": true,
+      "darkModeSupport": true,
+      "extendInfo": {
+        "NSCameraUsageDescription": "Reloventa never uses the camera unless you allow a site to.",
+        "NSMicrophoneUsageDescription": "Reloventa never uses the microphone unless you allow a site to."
+      }
+    },
+    "dmg": {
+      "title": "Reloventa",
+      "icon": "build/icon.icns",
+      "background": "build/dmg-background.png",
+      "window": {
+        "width": 660,
+        "height": 400
+      },
+      "contents": [
+        {
+          "x": 170,
+          "y": 200,
+          "type": "file"
+        },
+        {
+          "x": 490,
+          "y": 200,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "ahmedalbazzaz-eng",
+        "repo": "reloventa"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ahmedalbazzaz-eng/reloventa.git"
+  }
+}
