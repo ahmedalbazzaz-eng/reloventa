@@ -1,7 +1,7 @@
 {
   "name": "reloventa",
   "productName": "Reloventa",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Reloventa \u2014 Social. Stream. Explore. A premium social & entertainment hub for macOS.",
   "main": "src/main/main.js",
   "author": "Reloventa",
@@ -16,7 +16,8 @@
   "devDependencies": {
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0",
-    "playwright": "^1.48.0"
+    "playwright": "^1.48.0",
+    "dmg-license": "^1.0.11"
   },
   "build": {
     "appId": "app.reloventa.mac",
