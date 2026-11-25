@@ -16,8 +16,7 @@
   "devDependencies": {
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0",
-    "playwright": "^1.48.0",
-    "dmg-license": "^1.0.11"
+    "playwright": "^1.48.0"
   },
   "build": {
     "appId": "app.reloventa.mac",
@@ -89,5 +88,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ahmedalbazzaz-eng/reloventa.git"
+  },
+  "optionalDependencies": {
+    "dmg-license": "^1.0.11"
   }
 }
