@@ -33,7 +33,11 @@ jobs:
       - if: steps.ver.outputs.skip == 'false'
         run: npm install
       - if: steps.ver.outputs.skip == 'false'
-        run: npm run release
+        shell: bash
+        run: |
+          # Empty secrets arrive as empty variables; electron-builder would treat an empty CSC_LINK as a path. Unset them.
+          for v in CSC_LINK CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do [ -z "${!v}" ] && unset "$v"; done
+          npm run release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Optional signing / notarization (needed for seamless macOS auto-update on other Macs):
