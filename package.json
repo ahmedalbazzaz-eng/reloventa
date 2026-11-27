@@ -81,7 +81,8 @@
         "repo": "reloventa",
         "releaseType": "release"
       }
-    ]
+    ],
+    "afterPack": "build/adhoc-sign.js"
   },
   "dependencies": {
     "electron-updater": "^6.3.9"
