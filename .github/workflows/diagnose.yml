@@ -1,0 +1,21 @@
+name: Diagnose runner
+# Read-only checks of the self-hosted Mac runner. Certificate names are redacted because logs of a public repo are public.
+on: workflow_dispatch
+jobs:
+  mac:
+    if: ${{ vars.MAC_RUNNER != '' }}
+    runs-on: ${{ fromJSON(vars.MAC_RUNNER) }}
+    timeout-minutes: 5
+    steps:
+      - shell: bash
+        run: |
+          echo "macOS: $(sw_vers -productVersion) arch: $(uname -m)"
+          echo "session type: $(launchctl managername 2>&1)   (Aqua = logged-in GUI session, Background/System = service)"
+          echo "runner process:"; ps -axo comm=,args= | grep -E "Runner.Listener|run.sh|runsvc" | grep -v grep | sed -E 's|/Users/[^/]+/|/Users/<user>/|g' | cut -c1-120
+          echo "runner launch agents: $(ls ~/Library/LaunchAgents 2>/dev/null | grep -c actions.runner)"
+          echo "default keychain: $(security default-keychain 2>&1 | sed -E 's|/Users/[^/]+/|/Users/<user>/|')"
+          echo "valid codesigning identities (type only):"
+          security find-identity -v -p codesigning 2>&1 | grep -E '^ +[0-9]+\)' | sed -E 's/^ +[0-9]+\) [0-9A-F]+ "([^:"]+).*/  - \1/' | sort | uniq -c
+          echo "valid identities total: $(security find-identity -v -p codesigning 2>&1 | grep -cE '^ +[0-9]+\)')"
+          echo "login keychain lock settings:"; security show-keychain-info ~/Library/Keychains/login.keychain-db 2>&1 | sed -E 's|/Users/[^/]+/|/Users/<user>/|'
+          echo "disk free: $(df -h / | awk 'NR==2{print $4}')"
