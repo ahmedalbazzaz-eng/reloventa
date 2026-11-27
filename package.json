@@ -1,7 +1,7 @@
 {
   "name": "reloventa",
   "productName": "Reloventa",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Reloventa \u2014 Social. Stream. Explore. A premium social & entertainment hub for macOS.",
   "main": "src/main/main.js",
   "author": "Reloventa",

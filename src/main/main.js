@@ -3,7 +3,7 @@ const { app, BrowserWindow, WebContentsView, ipcMain, shell, session, Menu, nati
 const path = require('path');
 const { PLATFORMS, byId, hostAllowed } = require('./platforms');
 const settings = require('./settings');
-const { setupUpdates } = require('./updater');
+const { setupUpdates, checkNow } = require('./updater');
 
 app.setName('Reloventa');
 if (!process.env.RELOVENTA_TEST) app.enableSandbox();   // every renderer sandboxed (test harness runs as root in CI)
@@ -79,7 +79,7 @@ function buildMenu() {
   const send = c => () => win && win.webContents.send('command', c);
   const nav = a => () => { const v = views.get(activeId); if (!v) return; const wc = v.webContents; ({ back: () => wc.navigationHistory.goBack(), forward: () => wc.navigationHistory.goForward(), reload: () => wc.reload() })[a](); };
   const tpl = [
-    { label: 'Reloventa', submenu: [{ role: 'about' }, { type: 'separator' }, { label: 'Settings…', accelerator: 'Cmd+,', click: send({ type: 'settings' }) }, { type: 'separator' }, { role: 'hide' }, { role: 'hideOthers' }, { role: 'unhide' }, { type: 'separator' }, { role: 'quit' }] },
+    { label: 'Reloventa', submenu: [{ role: 'about' }, { label: 'Check for Updates…', click: () => checkNow() }, { type: 'separator' }, { label: 'Settings…', accelerator: 'Cmd+,', click: send({ type: 'settings' }) }, { type: 'separator' }, { role: 'hide' }, { role: 'hideOthers' }, { role: 'unhide' }, { type: 'separator' }, { role: 'quit' }] },
     { label: 'Edit', submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] },
     { label: 'Navigate', submenu: [
       { label: 'Home', accelerator: 'Cmd+0', click: send({ type: 'home' }) },
