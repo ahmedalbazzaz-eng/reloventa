@@ -9,7 +9,7 @@
 ## 2. Functional
 | ID | Requirement | Status |
 |----|-------------|--------|
-| F1 | Six platforms in one window: Facebook, Instagram, TikTok, YouTube, Netflix, Prime Video | Done |
+| F1 | Seven platforms in one window: Facebook, Instagram, TikTok, YouTube, Netflix, Prime Video, Shahid | Done |
 | F2 | Isolated, persistent session per platform (separate cookies/storage) | Done |
 | F3 | Back / forward / reload, per-platform | Done |
 | F4 | Home dashboard: continue where you left off, today's local usage, quick launch | Done |
@@ -18,7 +18,7 @@
 | F7 | Focus mode; native HTML5 fullscreen for video | Done |
 | F8 | Settings: theme, accent, motion, visible platforms, break reminder, clear data | Done |
 | F9 | Over-the-air updates through GitHub Releases | Implemented, untested on a signed build |
-| F10 | Netflix / Prime Video DRM playback | **Blocked** — needs Widevine (castlabs Electron build) |
+| F10 | Netflix / Prime Video / Shahid DRM playback | **Blocked** — needs Widevine (castlabs Electron build) |
 
 ## 3. Design & UX (from the brief)
 - Unique, modern, minimalist-but-rich, intuitive; not a browser layout → floating glass sidebar, dashboard, adaptive stage.
@@ -38,5 +38,5 @@
 
 ## 6. Verification
 - `node test/ui-smoke.js` — 22 checks (layouts, palette, themes, collapse, focus, Reduce Motion, contrast).
-- `electron test/electron-smoke.js` — 10 checks against the real main process (IPC bridge, isolation, native view bounds, UA).
+- `electron test/electron-smoke.js` — 13 checks (incl. window grow/shrink/full-screen resizing) against the real main process (IPC bridge, isolation, native view bounds, UA).
 - **Not yet verified:** real macOS rendering (vibrancy, traffic lights, 3-finger swipe), signed builds, auto-update, DRM streaming.

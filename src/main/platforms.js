@@ -8,6 +8,7 @@ const PLATFORMS = [
   { id: 'youtube',   name: 'YouTube',     kind: 'stream', blurb: 'Videos, music & live',          url: 'https://www.youtube.com/',      hosts: ['youtube.com', 'youtu.be', 'ytimg.com', 'googlevideo.com', 'google.com', 'gstatic.com', 'googleusercontent.com', 'accounts.google.com'], layout: 'wide', c1: '#FF5A4D', c2: '#C21B3C', glyph: 'wave' },
   { id: 'netflix',   name: 'Netflix',     kind: 'stream', blurb: 'Series & films',                url: 'https://www.netflix.com/',      hosts: ['netflix.com', 'nflxvideo.net', 'nflximg.net', 'nflxext.com', 'nflxso.net'], layout: 'wide', c1: '#E50914', c2: '#7A0610', glyph: 'spot' },
   { id: 'prime',     name: 'Prime Video', kind: 'stream', blurb: 'Originals, movies & more',      url: 'https://www.primevideo.com/',   hosts: ['primevideo.com', 'amazon.com', 'media-amazon.com', 'amazonvideo.com', 'aiv-cdn.net', 'pv-cdn.net', 'ssl-images-amazon.com'], layout: 'wide', c1: '#35B6FF', c2: '#1255D6', glyph: 'crate' },
+  { id: 'shahid',    name: 'Shahid',      kind: 'stream', blurb: 'Arabic series, films & live TV',  url: 'https://shahid.mbc.net/',       hosts: ['shahid.net', 'shahid.mbc.net', 'mbc.net'], layout: 'wide', c1: '#2EE6A8', c2: '#0B7A6B', glyph: 'crescent' },
 ];
 const byId = Object.fromEntries(PLATFORMS.map(p => [p.id, p]));
 

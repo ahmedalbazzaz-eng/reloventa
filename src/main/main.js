@@ -9,7 +9,7 @@ app.setName('Reloventa');
 if (!process.env.RELOVENTA_TEST) app.enableSandbox();   // every renderer sandboxed (test harness runs as root in CI)
 let win = null;
 const views = new Map();                   // id -> WebContentsView
-let activeId = null, lastBounds = { x: 0, y: 0, width: 0, height: 0 }, immersiveFull = false, hiddenByOverlay = false;
+let activeId = null, lastBounds = { x: 0, y: 0, width: 0, height: 0 }, htmlFullscreen = false, hiddenByOverlay = false;
 
 const SAFE_PERMS = new Set(['fullscreen', 'pointerLock', 'clipboard-sanitized-write']);
 
@@ -33,9 +33,13 @@ function makeView(id) {
   });
   wc.on('will-navigate', (e, url) => { if (!hostAllowed(p, url)) { e.preventDefault(); safeExternal(url); } });
   const push = () => { if (activeId === id && win && !win.isDestroyed()) win.webContents.send('view:state', { id, canGoBack: wc.navigationHistory.canGoBack(), canGoForward: wc.navigationHistory.canGoForward(), loading: wc.isLoading(), url: wc.getURL() }); };
+  wc.on('did-navigate', (_e, url) => {   // Google deliberately blocks sign-in inside embedded apps; tell the user instead of leaving them guessing
+    try { if (new URL(url).hostname === 'accounts.google.com' && win) win.webContents.send('notice', 'Google may refuse sign-in inside apps. YouTube still works signed out.'); } catch {}
+  });
   ['did-start-loading', 'did-stop-loading', 'did-navigate', 'did-navigate-in-page'].forEach(e => wc.on(e, push));
-  wc.on('enter-html-full-screen', () => { win.setFullScreen(true); const [w, h] = win.getContentSize(); v.setBounds({ x: 0, y: 0, width: w, height: h }); win.webContents.send('fullscreen', true); });
-  wc.on('leave-html-full-screen', () => { win.setFullScreen(false); v.setBounds(lastBounds); win.webContents.send('fullscreen', false); });
+  // HTML5 video fullscreen: the page covers the whole window; restore the layout rectangle afterwards.
+  wc.on('enter-html-full-screen', () => { htmlFullscreen = true; win.setFullScreen(true); const [w, h] = win.getContentSize(); v.setBounds({ x: 0, y: 0, width: w, height: h }); win.webContents.send('fullscreen', true); });
+  wc.on('leave-html-full-screen', () => { htmlFullscreen = false; win.setFullScreen(false); v.setBounds(lastBounds); win.webContents.send('fullscreen', false); });
   wc.loadURL(p.url);
   views.set(id, v);
   return v;
@@ -66,6 +70,8 @@ function createWindow() {
   win.webContents.setWindowOpenHandler(({ url }) => { safeExternal(url); return { action: 'deny' }; });
   win.webContents.on('will-navigate', e => e.preventDefault());
   win.on('swipe', (_e, dir) => win.webContents.send('command', { type: 'cycle', dir: dir === 'left' ? 1 : -1 }));   // 3-finger swipe
+  const resync = () => { if (win && !win.isDestroyed()) win.webContents.send('command', { type: 'sync' }); };
+  ['resize', 'maximize', 'unmaximize', 'enter-full-screen', 'leave-full-screen', 'restore'].forEach(e => win.on(e, resync));
   win.on('closed', () => { win = null; views.clear(); });
 }
 
@@ -103,7 +109,7 @@ ipcMain.handle('view:open', (_e, id) => { if (id === null) { hideAll(); return; 
 ipcMain.on('view:bounds', (_e, b) => {
   if (!b || ![b.x, b.y, b.width, b.height].every(Number.isFinite)) return;
   lastBounds = { x: Math.round(b.x), y: Math.round(b.y), width: Math.max(1, Math.round(b.width)), height: Math.max(1, Math.round(b.height)) };
-  const v = views.get(activeId); if (v && !win.isFullScreen()) v.setBounds(lastBounds);
+  const v = views.get(activeId); if (v && !htmlFullscreen) v.setBounds(lastBounds);   // OS fullscreen / zoom must still re-layout
 });
 ipcMain.handle('view:hide', async () => {
   hiddenByOverlay = true; const v = views.get(activeId); if (!v) return null;

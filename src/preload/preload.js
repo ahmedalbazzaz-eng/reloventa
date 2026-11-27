@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('reloventa', {
   clearData: id => ipcRenderer.invoke('privacy:clear', id), // id or 'all'
   openExternal: u => ipcRenderer.send('external:open', u),
   onCommand: cb => on('command', cb),
+  onNotice: cb => on('notice', cb),
   onViewState: cb => on('view:state', cb),
   onFullscreen: cb => on('fullscreen', cb),
   platform: process.platform,

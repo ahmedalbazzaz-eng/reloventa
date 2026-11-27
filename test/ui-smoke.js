@@ -6,16 +6,16 @@ const stub = `(${function (platforms) {
   window.__calls = []; let settings = { theme: 'system', accent: '#7B61FF', motion: 'system', sidebarCollapsed: false, layouts: {}, lastPlatform: null, hidden: [], recents: {}, usage: {}, breakNudgeMinutes: 0 };
   window.reloventa = { platform: 'linux', boot: async () => ({ platforms, settings, version: '1.0.0' }), setSettings: async p => (settings = { ...settings, ...p }),
     open: async id => window.__calls.push(['open', id]), setBounds: b => (window.__bounds = b), hideViews: async () => null, showViews: async () => {}, nav: a => window.__calls.push(['nav', a]),
-    setImmersive: v => window.__calls.push(['immersive', v]), clearData: async id => window.__calls.push(['clear', id]), openExternal() {}, onCommand() {}, onViewState() {}, onFullscreen() {} };
+    setImmersive: v => window.__calls.push(['immersive', v]), clearData: async id => window.__calls.push(['clear', id]), openExternal() {}, onCommand() {}, onViewState() {}, onFullscreen() {}, onNotice() {} };
 }})(${JSON.stringify(PLATFORMS)})`;
 const ok = (c, m) => { if (!c) { console.error('FAIL', m); process.exitCode = 1; } else console.log('pass', m); };
 (async () => {
-  const b = await chromium.launch(); const errors = [];
+  const b = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}); const errors = [];
   const ctx = await b.newContext({ viewport: { width: 1320, height: 840 }, deviceScaleFactor: 1, colorScheme: 'dark' });
   await ctx.addInitScript(stub); const p = await ctx.newPage(); p.on('pageerror', e => errors.push(e.message)); p.on('console', m => m.type() === 'error' && errors.push(m.text()));
   await p.goto('file://' + path.resolve(__dirname, '../src/renderer/index.html')); await p.waitForSelector('.card');
   await p.waitForTimeout(400); await p.screenshot({ path: `${out}/01-home-dark.png` });
-  ok(await p.locator('.card').count() === 6, 'home shows six platform cards');
+  ok(await p.locator('.card').count() === 7, 'home shows seven platform cards');
   await p.click('.nav-item[data-id=tiktok]'); await p.waitForTimeout(500);
   ok(await p.evaluate(() => window.__calls.some(c => c[1] === 'tiktok')), 'opening TikTok calls native open');
   const bd = await p.evaluate(() => window.__bounds); ok(bd.width === 440, `vertical platform gets 440px phone column (got ${bd.width})`);

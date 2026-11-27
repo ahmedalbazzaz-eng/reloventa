@@ -136,7 +136,7 @@
     };
     section('social', 'Social', 'Vertical, feed-first — shown in a phone-width column.', 'vertical');
     section('stream', 'Stream', 'Widescreen, full-bleed — made for the big picture.', 'wide');
-    h.append(el('div', { class: 'tips' }, ...[['⌘K', 'jump anywhere'], ['⌘1–6', 'switch platform'], ['⌘L', 'cycle layout'], ['⇧⌘F', 'focus mode'], ['⌥⌘S', 'sidebar']].map(([k, t]) => el('span', {}, el('kbd', { text: k }), document.createTextNode(t)))));
+    h.append(el('div', { class: 'tips' }, ...[['⌘K', 'jump anywhere'], ['⌘1–7', 'switch platform'], ['⌘L', 'cycle layout'], ['⇧⌘F', 'focus mode'], ['⌥⌘S', 'sidebar']].map(([k, t]) => el('span', {}, el('kbd', { text: k }), document.createTextNode(t)))));
   }
 
   /* ---------- Overlays: native views are hidden & replaced by a blurred snapshot ---------- */
@@ -222,8 +222,10 @@
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
     });
     new ResizeObserver(() => { syncBounds(); }).observe($('#slot'));
+    addEventListener('resize', () => requestAnimationFrame(syncBounds));
     document.addEventListener('visibilitychange', () => document.body.classList.toggle('paused', document.hidden));
-    api.onCommand(c => ({ open: () => open(c.id), home: goHome, cycle: () => cycle(c.dir), palette: openPalette, settings: openSettings, sidebar: toggleSidebar, focus: () => toggleFocus(), layout: () => current && setLayout(LAYOUT_ORDER[(LAYOUT_ORDER.indexOf(S.layouts[current] || 'auto') + 1) % 3]) })[c.type]?.());
+    api.onCommand(c => ({ open: () => open(c.id), home: goHome, cycle: () => cycle(c.dir), palette: openPalette, settings: openSettings, sidebar: toggleSidebar, focus: () => toggleFocus(), sync: () => requestAnimationFrame(syncBounds), layout: () => current && setLayout(LAYOUT_ORDER[(LAYOUT_ORDER.indexOf(S.layouts[current] || 'auto') + 1) % 3]) })[c.type]?.());
+    api.onNotice(m => toast(m));
     api.onViewState(s => { if (s.id !== current) return; viewState = s; updateToolbar(); });
     api.onFullscreen(on => { document.body.classList.toggle('focus', on || focus); });
     setInterval(tickUsage, 5000);
