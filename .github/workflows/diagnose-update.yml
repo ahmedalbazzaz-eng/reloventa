@@ -1,5 +1,5 @@
 name: Diagnose app update
-# Read-only: inspects the installed Reloventa app and its updater logs on the self-hosted Mac. Usernames are redacted (public logs).
+# Read-only: inspects where Reloventa is installed and the updater state on the self-hosted Mac. Usernames are redacted (public logs).
 on: workflow_dispatch
 jobs:
   mac:
@@ -10,20 +10,15 @@ jobs:
       - shell: bash
         run: |
           red() { sed -E "s|/Users/[^/ ]+/|/Users/<user>/|g"; }
-          for A in /Applications/Reloventa.app ~/Applications/Reloventa.app; do
-            [ -d "$A" ] || continue
-            echo "== installed: $(echo $A | red)"
-            echo "version: $(defaults read "$A/Contents/Info" CFBundleShortVersionString 2>&1)"
-            echo "signature:"; codesign -dv "$A" 2>&1 | grep -E "Identifier|Signature|Authority|TeamIdentifier|flags" | red
-            echo "quarantine: $(xattr -p com.apple.quarantine "$A" 2>&1 | cut -c1-30)"
-            echo "app-update.yml:"; cat "$A/Contents/Resources/app-update.yml" 2>&1 | head -8
-            echo "writable by user: $([ -w "$A" ] && echo yes || echo no)   owner: $(stat -f %Su "$A")"
+          echo "local time: $(date)  tz: $(date +%Z)"
+          echo "== copies of the app (bundle id app.reloventa.mac)"
+          mdfind "kMDItemCFBundleIdentifier == 'app.reloventa.mac'" | while read -r A; do
+            echo "- $(echo "$A" | red)  version=$(defaults read "$A/Contents/Info" CFBundleShortVersionString 2>&1)  arch=$(lipo -archs "$A/Contents/MacOS/Reloventa" 2>&1)  sig=$(codesign -dv "$A" 2>&1 | grep -E '^Signature=' )  authority=$(codesign -dv "$A" 2>&1 | grep -c Authority)"
           done
-          echo "== updater cache"; ls -la ~/Library/Caches/ 2>/dev/null | grep -iE "reloventa|shipit" | red
-          for D in ~/Library/Caches/reloventa-updater ~/Library/Caches/app.reloventa.mac.ShipIt; do
-            [ -d "$D" ] && { echo "-- $(echo $D | red)"; find "$D" -maxdepth 3 | head -20 | red; }
-          done
-          for L in ~/Library/Caches/app.reloventa.mac.ShipIt/ShipIt_stderr.log ~/Library/Caches/app.reloventa.mac.ShipIt/ShipIt_stdout.log; do
-            [ -f "$L" ] && { echo "== $(basename $L) (last 25 lines)"; tail -25 "$L" | red | cut -c1-240; }
-          done
-          echo "== Reloventa running?"; pgrep -fl "Reloventa" | head -3 | red | cut -c1-120
+          ls -d /Applications/Reloventa* ~/Applications/Reloventa* /Volumes/Reloventa* 2>/dev/null | red
+          echo "== running processes"; pgrep -fl "Reloventa" | head -3 | red | cut -c1-140
+          echo "== update-info.json"; cat ~/Library/Caches/reloventa-updater/pending/update-info.json 2>&1 | red | cut -c1-300
+          echo "== files"; ls -la ~/Library/Caches/reloventa-updater ~/Library/Caches/reloventa-updater/pending ~/Library/Caches/app.reloventa.mac.ShipIt 2>&1 | red
+          echo "== ShipIt_stdout.log (tail)"; tail -12 ~/Library/Caches/app.reloventa.mac.ShipIt/ShipIt_stdout.log 2>&1 | red | cut -c1-220
+          echo "== ShipIt_stderr.log timestamps"; grep -oE '^[0-9-]+ [0-9:]+' ~/Library/Caches/app.reloventa.mac.ShipIt/ShipIt_stderr.log 2>/dev/null | sort | sed -n '1p;$p'
+          echo "== signature validation errors in stderr"; grep -iE "signature|requirement|validation|not valid" ~/Library/Caches/app.reloventa.mac.ShipIt/ShipIt_stderr.log 2>/dev/null | red | cut -c1-220 | tail -5
