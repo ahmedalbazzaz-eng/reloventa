@@ -10,7 +10,7 @@ Repo > Settings > Secrets and variables > Actions > **Variables** > New: `MAC_RU
 
 ### B. Self-hosted runner on your Mac (works today)
 1. Repo > Settings > Actions > Runners > **New self-hosted runner** > macOS > ARM64, and run the commands shown (download + `./config.sh`).
-2. Start it with `./run.sh` (or `sudo ./svc.sh install && sudo ./svc.sh start` to run in the background).
+2. Start it with `./run.sh` (or `./svc.sh install && ./svc.sh start` — no sudo on macOS — to keep it running in the background).
 3. Variable `MAC_RUNNER` = `["self-hosted","macOS","ARM64"]`.
 
 The job deletes `dist/`, `node_modules/` and the Electron caches after every build; the only persistent files are the runner itself (~200 MB) and the cloned workspace. Everything released lives on GitHub. Your Mac must be on and online when a release is pushed.
