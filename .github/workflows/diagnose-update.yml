@@ -9,6 +9,7 @@ jobs:
     steps:
       - shell: bash
         run: |
+          set +e +o pipefail
           red() { sed -E "s|/Users/[^/ ]+/|/Users/<user>/|g"; }
           echo "local time: $(date)  tz: $(date +%Z)"
           echo "== copies of the app (bundle id app.reloventa.mac)"
