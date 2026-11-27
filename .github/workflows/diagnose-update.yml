@@ -1,0 +1,29 @@
+name: Diagnose app update
+# Read-only: inspects the installed Reloventa app and its updater logs on the self-hosted Mac. Usernames are redacted (public logs).
+on: workflow_dispatch
+jobs:
+  mac:
+    if: ${{ vars.MAC_RUNNER != '' }}
+    runs-on: ${{ fromJSON(vars.MAC_RUNNER) }}
+    timeout-minutes: 5
+    steps:
+      - shell: bash
+        run: |
+          red() { sed -E "s|/Users/[^/ ]+/|/Users/<user>/|g"; }
+          for A in /Applications/Reloventa.app ~/Applications/Reloventa.app; do
+            [ -d "$A" ] || continue
+            echo "== installed: $(echo $A | red)"
+            echo "version: $(defaults read "$A/Contents/Info" CFBundleShortVersionString 2>&1)"
+            echo "signature:"; codesign -dv "$A" 2>&1 | grep -E "Identifier|Signature|Authority|TeamIdentifier|flags" | red
+            echo "quarantine: $(xattr -p com.apple.quarantine "$A" 2>&1 | cut -c1-30)"
+            echo "app-update.yml:"; cat "$A/Contents/Resources/app-update.yml" 2>&1 | head -8
+            echo "writable by user: $([ -w "$A" ] && echo yes || echo no)   owner: $(stat -f %Su "$A")"
+          done
+          echo "== updater cache"; ls -la ~/Library/Caches/ 2>/dev/null | grep -iE "reloventa|shipit" | red
+          for D in ~/Library/Caches/reloventa-updater ~/Library/Caches/app.reloventa.mac.ShipIt; do
+            [ -d "$D" ] && { echo "-- $(echo $D | red)"; find "$D" -maxdepth 3 | head -20 | red; }
+          done
+          for L in ~/Library/Caches/app.reloventa.mac.ShipIt/ShipIt_stderr.log ~/Library/Caches/app.reloventa.mac.ShipIt/ShipIt_stdout.log; do
+            [ -f "$L" ] && { echo "== $(basename $L) (last 25 lines)"; tail -25 "$L" | red | cut -c1-240; }
+          done
+          echo "== Reloventa running?"; pgrep -fl "Reloventa" | head -3 | red | cut -c1-120
